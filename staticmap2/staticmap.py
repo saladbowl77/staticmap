@@ -7,6 +7,7 @@ from math import sqrt, log, tan, pi, cos, ceil, floor, atan, sinh
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
+from .db import mapCache
 
 class Line:
     def __init__(self, coords, color, width, simplify=True):
@@ -274,6 +275,9 @@ class StaticMap:
         reverse_y=False,
         background_color="#fff",
         delay_between_retries=0,
+
+        cache_expires: int = 90,
+        cache_dbname: str = 'mapdata.db',
     ):
         """
         :param width: map width in pixel
@@ -321,6 +325,9 @@ class StaticMap:
         self.zoom = 0
 
         self.delay_between_retries = delay_between_retries
+
+        self.cache_expires = cache_expires
+        self.cache_dbname = cache_dbname
 
     def add_line(self, line):
         """
@@ -535,6 +542,8 @@ class StaticMap:
                 thread_pool.submit(
                     self.get,
                     tile[2],
+                    self.cache_expires,
+                    self.cache_dbname,
                     timeout=self.request_timeout,
                     headers=self.headers,
                 )
@@ -544,17 +553,12 @@ class StaticMap:
             for tile, future in zip(tiles, futures):
                 x, y, url = tile
 
-                try:
-                    response_status_code, response_content = future.result()
-                except:
-                    response_status_code, response_content = None, None
-
-                if response_status_code != 200:
-                    print("request failed [{}]: {}".format(response_status_code, url))
+                if future.result() == 1:
+                    print("request failed : {}".format(url))
                     failed_tiles.append(tile)
                     continue
 
-                tile_image = Image.open(BytesIO(response_content)).convert("RGBA")
+                tile_image = Image.open(future.result()).convert("RGBA")
                 box = [
                     self._x_to_px(x),
                     self._y_to_px(y),
@@ -566,12 +570,16 @@ class StaticMap:
             # put failed back into list of tiles to fetch in next try
             tiles = failed_tiles
 
-    def get(self, url, **kwargs):
+    def get(self, url, cache_expires, cache_dbname, **kwargs):
         """
-        returns the status code and content (in bytes) of the requested tile url
+        returns the BytesIO Data
         """
-        res = requests.get(url, **kwargs)
-        return res.status_code, res.content
+        chache = mapCache(
+            url,
+            expires=cache_expires,
+            dbname=cache_dbname
+        )
+        return mapCache.loadMap(chache)
 
     def _draw_features(self, image):
         """
