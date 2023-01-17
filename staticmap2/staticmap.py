@@ -1,10 +1,8 @@
 import itertools
 import time
 from concurrent.futures import ThreadPoolExecutor
-from io import BytesIO
 from math import sqrt, log, tan, pi, cos, ceil, floor, atan, sinh
 
-import requests
 from PIL import Image, ImageDraw, ImageFont
 
 from .db import mapCache
