@@ -3,6 +3,12 @@
 Static Map 2 is the Static Map fork by Saladbowl. It's compatible with Static Map.
 Static Map is A small, python-based library for creating map images with lines and markers.
 
+## How to install
+`pip install git+https://github.com/saladbowl77/staticmap.git`
+
+## Functions not available in the original
+Image cache function
+
 ## Example
 ```python
 m = StaticMap(300, 400, 10)
