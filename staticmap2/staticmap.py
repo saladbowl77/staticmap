@@ -266,7 +266,7 @@ class StaticMap:
         height,
         padding_x=0,
         padding_y=0,
-        url_template="http://a.tile.komoot.de/komoot-2/{z}/{x}/{y}.png",
+        url_template="https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
         tile_size=256,
         tile_request_timeout=None,
         headers=None,
