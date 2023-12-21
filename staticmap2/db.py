@@ -24,7 +24,7 @@ class mapCache:
             'Cache-Control': 'max-age=604800'
         }
         res = requests.get(self.url, headers=headers)
-        print(res.status_code, url, type(res.content))
+        print(res.status_code, self.url, type(res.content))
 
         res = requests.get(self.url)
         # ファイルの拡張子を確認する print((res.headers['Content-Type'].split('/'))[1])
