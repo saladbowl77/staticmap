@@ -23,7 +23,7 @@ class mapCache:
             'User-Agent': 'Static Map 2',
             'Cache-Control': 'max-age=604800'
         }
-        res = requests.get(url, headers=headers)
+        res = requests.get(self.url, headers=headers)
         print(res.status_code, url, type(res.content))
 
         res = requests.get(self.url)
