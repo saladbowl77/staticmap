@@ -24,14 +24,14 @@ class mapCache:
             'Cache-Control': 'max-age=604800'
         }
         res = requests.get(self.url, headers=headers)
-        print(res.status_code, self.url, type(res.content))
+        if self.dev:
+            print(res.status_code, self.url, type(res.content))
 
-        res = requests.get(self.url)
         # ファイルの拡張子を確認する print((res.headers['Content-Type'].split('/'))[1])
         if res.status_code == 200:
             return res.content
         else:
-            return 1
+            return res.status_code 
 
     def mkDB(self, conn, cur):
         cur.execute('CREATE TABLE IF NOT EXISTS cacheData(id INTEGER PRIMARY KEY AUTOINCREMENT, imgID STRING, url STRING, byteData BLOB, expires STRING)')
@@ -52,12 +52,15 @@ class mapCache:
         # データ登録
         expiresDay = (self.nowDT + timedelta(days=self.expires)).strftime('%Y/%m/%d %H:%M:%S %z')
         mapData = mapCache.saveMapImage(self)
-        if self.dev:
-            print(expiresDay)
-        cur.execute(f'INSERT INTO cacheData(imgID, url, byteData, expires) VALUES(?, ?, ?, ?)', (imageID, self.url, mapData, expiresDay))
-        # commit→データの反映
-        conn.commit()
-        return BytesIO(mapData)
+        if type(mapData) is int:
+            return BytesIO()
+        else:
+            if self.dev:
+                print(expiresDay)
+            cur.execute(f'INSERT INTO cacheData(imgID, url, byteData, expires) VALUES(?, ?, ?, ?)', (imageID, self.url, mapData, expiresDay))
+            # commit→データの反映
+            conn.commit()
+            return BytesIO(mapData)
 
     def loadMap(self):
         if self.expires == 0:
